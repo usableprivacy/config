@@ -1,0 +1,350 @@
+# Set default network connection to auto (dhcp)
+function set_dhcp() {
+  nmcli con mod $current_connection_uuid ipv4.method auto >/dev/null 2>&1
+  nmcli con mod $current_connection_uuid ipv6.method auto >/dev/null 2>&1
+}
+
+# Set static IPs for default network connection
+function set_static_ip() {
+  nmcli con mod $current_connection_uuid ipv4.method manual ipv4.addresses "$new_ip_v4/$current_netmask_v4" ipv4.gateway "$current_gateway_v4" >/dev/null 2>&1
+  if [ "$ip_v6" = true ]; then
+    nmcli con mod $current_connection_uuid ipv6.method manual ipv6.addresses "$current_ip_v6/$current_netmask_v6" ipv6.gateway "$current_gateway_v6" >/dev/null 2>&1
+  fi
+}
+
+# Set Pi-hole static IP in config
+function set_pi_hole_ip() {
+
+  if grep IPV4_ADDRESS $pihole_setup_file &>/dev/null; then
+    sed -E "s/IPV4_ADDRESS=.+/IPV4_ADDRESS=$new_ip_v4\/24/g" $pihole_setup_file &> /dev/null
+  else
+    echo -e "IPV4_ADDRESS=$new_ip_v4" >>$pihole_setup_file
+  fi
+
+  if [ "$current_ip_v6" != "" ]; then
+    if grep IPV6_ADDRESS $pihole_setup_file &>/dev/null; then
+      sed -E "s/IPV6_ADDRESS=.+/IPV6_ADDRESS=$current_ip_v6\/24/g" $pihole_setup_file  &> /dev/null
+    else
+      echo -e "IPV6_ADDRESS=$current_ip_v6" >>$pihole_setup_file
+    fi
+  fi
+
+}
+
+# Set system password
+function set_system_password() {
+  if [ "$environment" = upbox ]; then
+    echo "$new_ssh_password" | passwd "$1" --stdin
+  else
+    echo "System passwords are only changed on UP boxes."
+  fi
+
+}
+
+# Set Pi-Hole Web UI password
+function set_pi_hole_password() {
+  pihole -a -p "$new_pihole_password" &>/dev/null
+}
+
+# Basic regex check if string is an IP
+function validate_ip() {
+  if [[ $new_ip_v4 =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo "ok"
+  else
+    echo "fail"
+  fi
+}
+
+# Confirm settings dialog
+function confirm_settings() {
+
+  local message="\nYour UP Box address: ${new_ip_v4}\n"
+  message+="\n⚠️  This is the last time, your passwords are displayed!\n\n"
+  message+="SYSTEM PASSWORD: ${new_ssh_password}\n"
+  message+="PIHOLE PASSWORD: ${new_pihole_password}\n\n\n"
+
+  echo "$message"
+
+  exec 3>&1
+  dialog --backtitle "$back_title" --title "Save your UP box configuration" --msgbox "$message" 13 60 2>&1 1>&3
+  local exit_code=$?
+  exec 3>&-
+  if [ $exit_code -eq 0 ]; then
+
+    set_system_password
+    set_pi_hole_password
+
+    if [ "$environment" = upbox ]; then
+      rm -f /etc/profile.d/up-config-init.sh
+    fi
+
+    clear
+    echo -e "New up configuration saved.\nPlease reboot to apply your new network settings using 'sudo reboot' ..."
+    sleep 1
+    exit 0
+  fi
+}
+
+# Set Knot Resolver DNS option
+function set_dns_option() {
+  case $dns_option in
+  1) cp "$up_conf_dir/kresd/plain.conf" "$kresd_config_file" ;;
+  2) cp "$up_conf_dir/kresd/recursive.conf" "$kresd_config_file" ;;
+  3) cp "$up_conf_dir/kresd/mix.conf" "$kresd_config_file" ;;
+  4) cp "$up_conf_dir/kresd/private.conf" "$kresd_config_file" ;;
+  esac
+
+  if [ "$ip_v6" = true ]; then
+    sed -E "s/net\.ipv6\ =\ .+/net\.ipv6\ =\ true/g" $kresd_config_file &> /dev/null
+  else
+    sed -E "s/net\.ipv6\ =\ .+/net\.ipv6\ =\ false/g" $kresd_config_file &> /dev/null
+  fi
+
+  service kresd@1 restart && service kresd@2 restart
+
+  echo -n "$dns_option" > "$up_dns_config_file"
+
+}
+
+# Load Knot Resolver DNS option from config
+function load_dns_option() {
+  dns_option=3
+  if [ -f "$up_dns_config_file" ]; then
+    dns_option=$(<$up_dns_config_file)
+  fi
+}
+
+# DNS Options dialog
+function dns_dialog() {
+  local title="🌐  Configure DNS settings"
+
+  load_dns_option
+  echo "$dns_option"
+
+  local option
+  option=$(dialog --default-item "$dns_option" --menu "$title" 12 45 25 \
+    1 "Plain" 2 "Recursive" 3 "Mix (recommended)" 4 "Private" 3>&2 2>&1 1>&3)
+
+  dns_option=$option
+
+  local response=$?
+
+  if [ $response -eq 1 ]; then
+    echo "Interrupted DNS config setup."
+    clear
+    exit 1
+  else
+    echo "Setting DNS option ..."
+    echo "$dns_option"
+    set_dns_option
+  fi
+
+}
+
+
+# Change password dialog
+function password_dialog() {
+  local title="🗝️  Configure secure passwords"
+  local ok_label="Continue"
+  local cancel_label="Exit"
+
+  local random_ssh_password
+  random_ssh_password=$(tr </dev/urandom -dc A-Za-z | head -c 14)
+  local random_pihole_password
+  random_pihole_password=$(tr </dev/urandom -dc A-Za-z | head -c 8)
+
+  # open file descriptor
+  exec 3>&1
+  local form_values
+  form_values=$(dialog --backtitle "$back_title" --title "$title" \
+    --cancel-label "$cancel_label" --ok-label "$ok_label" \
+    --form "\nChange or use generated random passwords" 12 60 0 \
+    "New System Password:" 1 1 "$random_ssh_password" 1 25 30 35 \
+    "New Pi-hole Password:" 2 1 "$random_pihole_password" 2 25 30 35 \
+    2>&1 1>&3)
+
+  local response=$?
+
+  exec 3>&-
+
+  mapfile -t form_values <<<"$form_values"
+
+  if [ $response -eq 1 ]; then
+    echo "Interrupted initial password setup."
+    clear
+    exit 1
+  else
+    if [[ ${#form_values[0]} -ge 6 ]] && [[ ${#form_values[1]} -ge 4 ]]; then
+      new_ssh_password=${form_values[0]}
+      new_pihole_password=${form_values[1]}
+      echo "Setting new passwords ..."
+      confirm_settings
+    else
+      password_dialog
+    fi
+
+  fi
+
+}
+
+# Change IP address dialog
+function network_dialog() {
+  local title="⚒️  Configure static IP address"
+  local ok_label="Continue"
+  local cancel_label="Exit"
+
+  # open file descriptor
+  exec 3>&1
+  local form_values
+  form_values=$(dialog --backtitle "$back_title" --title "$title" \
+    --cancel-label "$cancel_label" --ok-label "$ok_label" \
+    --form "\nChange or use current IP address" 12 60 0 \
+    "Set Static IP:" 1 1 "$current_ip_v4" 1 25 30 35 \
+    2>&1 1>&3)
+
+  local response=$?
+
+  exec 3>&-
+
+  if [ $response -eq 1 ]; then
+    echo "Interrupted network config."
+    clear
+    exit 1
+  else
+    new_ip_v4="${form_values[0]}"
+    local check
+    check=$(validate_ip)
+    if [ "$check" = "ok" ]; then
+      echo "Configuring static IP address ..."
+      set_static_ip
+      set_pi_hole_ip
+    else
+      network_dialog
+    fi
+  fi
+
+}
+
+# Initial dialog for box setup
+function welcome() {
+  local title="✔ Your Box is ready for setup"
+  local message="\n\nStart basic Usable Privacy Box setup."
+  local yes_label="Start"
+  local no_label="Exit"
+  dialog --backtitle "$back_title" --title "$title" --yes-label "$yes_label" --no-label "$no_label" --yesno "$message" 10 60
+
+  local response=$?
+  clear
+  case $response in
+  0) echo "Starting initial setup ..." && network_dialog && dns_dialog && password_dialog;;
+  1) echo "Setup interrupted." ;;
+  255) echo "[ESC] Setup interrupted." ;;
+  esac
+}
+
+# Reset UP config setup
+function reset() {
+
+  if [ -f "$pihole_setup_file" ]; then
+    mv "$pihole_setup_file" "$pihole_setup_file.backup"
+  fi
+
+  if [ -f "$up_dns_config_file" ]; then
+    mv "$up_dns_config_file" "$up_dns_config_file.backup"
+  fi
+
+  default_password=setup123
+
+  new_ssh_password="$default_password"
+  new_pihole_password="$default_password"
+
+  set_system_password
+  set_dhcp
+
+  up-config-installer
+
+  echo -e "\nup-config reset complete. Please reboot with 'sudo reboot' ..."
+  sleep 1
+  exit 0
+
+}
+
+# Load system information
+function load_system_information() {
+
+  ip_v6=false
+
+  kresd_config_file=/etc/knot-resolver/kresd.conf
+
+  pihole_setup_file=/etc/pihole/setupVars.conf
+
+  up_dir=/opt/up-config
+  up_conf_dir="$up_dir/conf"
+
+  back_title="Usable Privacy Box Configuration utility"
+
+  environment="system"
+
+  if [ -f "/boot/up.txt" ]; then
+    environment="upbox"
+  fi
+
+  if [ -d "/vagrant" ]; then
+    up_conf_dir=/vagrant/conf
+    environment="vagrant"
+  fi
+
+  up_dns_config_file="/etc/up.conf"
+
+  default_network_device=$(ip -4 route ls | grep default | tail -1 | grep -Po '(?<=dev )(\S+)')
+  current_ip_v4=$(ip -4 addr show dev $default_network_device | awk '/inet/ {print $2}' | cut -d'/' -f1)
+  current_netmask_v4=$(ip -4 addr show dev $default_network_device | awk '/inet/ {print $2}' | cut -d'/' -f2)
+  current_gateway_v4=$(ip -4 route ls | grep default | tail -1 | grep -Po '(?<=via )(\S+)')
+
+  if ip -6 route ls | grep default &>/dev/null; then
+    current_ip_v6=$(ip -6 addr show dev $default_network_device | awk '/inet/ {print $2}' | cut -d'/' -f1)
+    current_netmask_v6=$(ip -6 addr show dev $default_network_device | awk '/inet/ {print $2}' | cut -d'/' -f2)
+    current_gateway_v6=$(ip -6 route ls | grep default | tail -1 | grep -Po '(?<=via )(\S+)')
+    ip_v6=true
+  fi
+
+  current_connection_uuid=$(nmcli -f UUID,DEVICE connection show | grep $default_network_device | awk '{print $1}')
+
+  if [ "$current_connection_uuid" = "" ]; then
+    echo "Default network device $default_network_device is not managed with NetworkManager."
+    sleep 1
+    exit 1
+  fi
+
+}
+
+function update() {
+  if [ "$environment" != vagrant ]; then
+    git -C "$up_dir" pull
+  fi
+}
+
+function dns() {
+  if [ -f "$up_dns_config_file" ]; then
+    dns_dialog
+    clear
+    echo "Changed DNS option."
+    sleep 1
+    exit 0
+  else
+    echo "Please run 'up-config init' first."
+    sleep 1
+    exit 1
+  fi
+}
+
+function init() {
+  if [ -f "$up_dns_config_file" ]; then
+    echo -e "\nup-config is already setup ...\n\nPlease use 'up-config dns' to change DNS options."
+    echo -e "Use 'up-config reset' to delete your initial configuration.\n"
+    sleep 1
+    exit 1
+  else
+    welcome
+  fi
+}

@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+set -e
+export LANG=C.UTF-8
+
+#
+# Check if we have root privileges
+#
+if [[ $EUID != 0 ]]; then
+  echo "This tool requires root privileges. Try again with \"sudo\"  ..." >&2
+  sleep 2
+  exit 1
+fi
+
+#
+# Load up-config functions
+#
+if [[ -f /usr/local/lib/up-config.functions ]]; then
+  source /usr/local/lib/up-config.functions
+else
+  echo "Required functions file: /usr/local/lib/up-config.functions not found."
+  exit 1
+fi
+
+
+#
+# Start the up-config Tool
+#
+load_system_information
+
+  case ${1} in
+  init) # display init screen
+    init
+    ;;
+  dns) # show config
+    dns
+    ;;
+  reset) # run setup reset
+    reset
+    ;;
+  update) # run update
+    update
+    ;;
+  "") # Empty option
+    echo "Valid arguments: dns, init, reset, update"
+    exit 1
+    ;;
+  *) # Invalid option
+    echo "Valid arguments: dns, init, reset, update"
+    exit 1
+    ;;
+  esac
+
+exit 0
