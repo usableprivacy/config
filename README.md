@@ -31,14 +31,18 @@ ___
 The UP Box 4 Configuration Tool primarily powers upriboxes based on [armbian](https://www.armbian.com/).<br>
 Other **debian-based Linux distributions** with network devices managed by **[NetworkManager](https://en.wikipedia.org/wiki/NetworkManager)** *may* work just fine.
 
-#### `curl `
+#### `curl https://raw.githubusercontent.com/usableprivacy/config/main/install.sh | bash`
 
 
 ### Command Line Interface (CLI)
-#### `up-config config`
+#### `up-config dns`
+Change the DNS mode after the initial setup.
 #### `up-config init`
+Start the initial up-config configuration.
 #### `up-config reset`
+Reset up-config settings to default.
 #### `up-config update`
+Update the up-config configuration utility.
 
 
 ___
