@@ -49,6 +49,9 @@ echo "
 
 "
 
+echo -ne "Installing up-config requirements ... \t\t"
+apt-get -qq install -y dialog git&>/dev/null
+
 if [ -d "/vagrant" ]; then
   up_conf_dir=/vagrant/conf
   up_lib_dir=/vagrant/lib
@@ -69,8 +72,6 @@ fi
 
 echo -e "Detected environment: $up_environment \n"
 
-echo -ne "Installing up-config requirements ... \t\t"
-apt-get -qq install -y dialog whiptail&>/dev/null
 ln -sf $up_lib_dir/up-config /usr/local/bin/up-config
 ln -sf $up_lib_dir/up-config.functions /usr/local/lib/up-config.functions
 
