@@ -50,7 +50,7 @@ echo "
 "
 
 echo -ne "Installing up-config requirements ... \t\t"
-apt-get -qq install -y dialog git&>/dev/null
+apt-get -qq install -y curl dialog git&>/dev/null
 
 if [ -d "/vagrant" ]; then
   up_conf_dir=/vagrant/conf
