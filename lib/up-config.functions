@@ -75,7 +75,7 @@ function confirm_settings() {
     set_pi_hole_password
 
     if [ "$environment" = upbox ]; then
-      rm -f /etc/profile.d/up-config-init.sh
+      rm -f $up_first_login_script
     fi
 
     clear
@@ -295,6 +295,7 @@ function load_system_information() {
   fi
 
   up_dns_config_file="/etc/up.conf"
+  up_first_login_script=/etc/profile.d/00-up-config-init.sh
 
   default_network_device=$(ip -4 route ls | grep default | tail -1 | grep -Po '(?<=dev )(\S+)')
   current_ip_v4=$(ip -4 addr show dev $default_network_device | awk '/inet/ {print $2}' | cut -d'/' -f1)

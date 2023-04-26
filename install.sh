@@ -22,6 +22,8 @@ up_dir=/opt/up-config
 up_git_url=https://github.com/usableprivacy/config.git
 up_conf_dir="$up_dir/conf"
 up_lib_dir="$up_dir/lib"
+up_configured=false
+up_first_login_script=/etc/profile.d/00-up-config-init.sh
 
 up_environment=system
 pi_hole_configured=false
@@ -93,9 +95,11 @@ echo "[✓]"
 echo -ne "Enabling knot-resolver ... \t\t\t"
 
 if ! [ -f "$up_conf_dir/dns.option" ]; then
+  up_configured=true
   rm -f $kresd_config_file
   cp $up_conf_dir/kresd/mix.conf $kresd_config_file
 fi
+
 
 systemctl enable --now kresd@1.service &>/dev/null
 systemctl enable --now kresd@2.service &>/dev/null
@@ -128,8 +132,8 @@ fi
 
 echo -e "\n up-config setup complete [✓]"
 
-if [ $up_environment = upbox ]; then
-  echo "sudo up-config init" > /etc/profile.d/up-config-init.sh
+if [ $up_environment = upbox ] && [ $up_configured = false ]; then
+  echo "sudo up-config init" > $up_first_login_script
 fi
 
 echo -e "\nPlease run 'up-config init' to complete the up-box setup."
