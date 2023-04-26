@@ -321,7 +321,7 @@ function load_system_information() {
 
 function update() {
   if [ "$environment" != vagrant ]; then
-    git -C "$up_dir" pull
+    git pull --rebase -C "$up_dir"
   fi
 }
 
