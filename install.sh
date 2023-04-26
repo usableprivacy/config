@@ -61,7 +61,7 @@ if [ -d "/vagrant" ]; then
   up_environment=vagrant
 else
   if [ -d "$up_dir" ]; then
-    git pull --rebase -C "$up_dir"
+    git -C "$up_dir" pull --rebase
   else
     git clone "$up_git_url" "$up_dir"
   fi
