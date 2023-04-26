@@ -94,10 +94,11 @@ echo "[✓]"
 
 echo -ne "Enabling knot-resolver ... \t\t\t"
 
-if ! [ -f "$up_conf_dir/dns.option" ]; then
-  up_configured=true
-  rm -f $kresd_config_file
-  cp $up_conf_dir/kresd/mix.conf $kresd_config_file
+if ! [ -f "/etc/up.conf" ]; then
+    rm -f $kresd_config_file
+    cp $up_conf_dir/kresd/mix.conf $kresd_config_file
+  else
+    up_configured=true
 fi
 
 
