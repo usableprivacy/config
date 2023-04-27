@@ -23,7 +23,7 @@ function set_pi_hole_ip() {
 
   if [ "$current_ip_v6" != "" ]; then
     if grep IPV6_ADDRESS $pihole_setup_file &>/dev/null; then
-      sed -E "s/IPV6_ADDRESS=.+/IPV6_ADDRESS=$current_ip_v6\/24/g" $pihole_setup_file  &> /dev/null
+      sed -E "s/IPV6_ADDRESS=.+/IPV6_ADDRESS=$current_ip_v6\/24/g" $pihole_setup_file  &>/dev/null
     else
       echo -e "IPV6_ADDRESS=$current_ip_v6" >>$pihole_setup_file
     fi
@@ -33,12 +33,7 @@ function set_pi_hole_ip() {
 
 # Set system password
 function set_system_password() {
-  if [ "$environment" = upbox ]; then
-    echo "$new_ssh_password" | passwd "$1" --stdin
-  else
-    echo "System passwords are only changed on UP boxes."
-  fi
-
+  echo "$new_ssh_password" | passwd "$new_ssh_password" --stdin &>/dev/null
 }
 
 # Set Pi-Hole Web UI password
@@ -63,7 +58,7 @@ function confirm_settings() {
   message+="SYSTEM PASSWORD: ${new_ssh_password}\n"
   message+="PIHOLE PASSWORD: ${new_pihole_password}\n\n\n"
 
-  echo "$message"
+  #echo "$message"
 
   exec 3>&1
   dialog --backtitle "$back_title" --title "Save your UP box configuration" --msgbox "$message" 13 60 2>&1 1>&3
@@ -71,15 +66,18 @@ function confirm_settings() {
   exec 3>&-
   if [ $exit_code -eq 0 ]; then
 
-    set_system_password
     set_pi_hole_password
 
     if [ "$environment" = upbox ]; then
+      set_system_password
       rm -f $up_first_login_script
+      echo -e "Initial up configuration saved. Automated box reboot in 5 seconds ..."
+      sleep 5
+      reboot
     fi
 
     clear
-    echo -e "New up configuration saved.\nPlease reboot to apply your new network settings using 'sudo reboot' ..."
+    echo -e "Initial up configuration saved.\nPlease reboot to apply your new network settings using 'sudo reboot' ..."
     sleep 1
     exit 0
   fi
@@ -119,7 +117,7 @@ function dns_dialog() {
   local title="🌐  Configure DNS settings"
 
   load_dns_option
-  echo "$dns_option"
+  #echo "$dns_option"
 
   local option
   option=$(dialog --default-item "$dns_option" --menu "$title" 12 45 25 \
@@ -134,8 +132,8 @@ function dns_dialog() {
     clear
     exit 1
   else
-    echo "Setting DNS option ..."
-    echo "$dns_option"
+    #echo "Setting DNS option ..."
+    #echo "$dns_option"
     set_dns_option
   fi
 
@@ -177,7 +175,7 @@ function password_dialog() {
     if [[ ${#form_values[0]} -ge 6 ]] && [[ ${#form_values[1]} -ge 4 ]]; then
       new_ssh_password=${form_values[0]}
       new_pihole_password=${form_values[1]}
-      echo "Setting new passwords ..."
+      #echo "Setting new passwords ..."
       confirm_settings
     else
       password_dialog
@@ -215,7 +213,7 @@ function network_dialog() {
     local check
     check=$(validate_ip)
     if [ "$check" = "ok" ]; then
-      echo "Configuring static IP address ..."
+      #echo "Configuring static IP address ..."
       set_static_ip
       set_pi_hole_ip
     else
@@ -258,10 +256,16 @@ function reset() {
   new_ssh_password="$default_password"
   new_pihole_password="$default_password"
 
-  set_system_password
   set_dhcp
 
   up-config-installer
+
+  if [ "$environment" = upbox ]; then
+    set_system_password
+    echo -e "Initial up configuration saved. Automated box reboot in 5 seconds ..."
+    sleep 5
+    reboot
+  fi
 
   echo -e "\nup-config reset complete. Please reboot with 'sudo reboot' ..."
   sleep 1
