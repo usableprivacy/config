@@ -63,7 +63,7 @@ else
   if [ -d "$up_dir" ]; then
     git -C "$up_dir" pull --rebase
   else
-    git clone "$up_git_url" "$up_dir"
+    git clone "$up_git_url" "$up_dir" &>/dev/null
   fi
   ln -sf "/$up_dir/install.sh" /usr/local/bin/up-config-installer
 fi

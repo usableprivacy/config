@@ -33,7 +33,7 @@ function set_pi_hole_ip() {
 
 # Set system password
 function set_system_password() {
-  echo "$new_ssh_password" | passwd --stdin up &>/dev/null
+  echo "$new_ssh_password" | passwd up &>/dev/null
 }
 
 # Set Pi-Hole Web UI password
@@ -235,8 +235,8 @@ function welcome() {
   clear
   case $response in
   0) echo "Starting initial setup ..." && network_dialog && dns_dialog && password_dialog;;
-  1) echo "Setup interrupted." ;;
-  255) echo "[ESC] Setup interrupted." ;;
+  1) clear && echo "Setup interrupted." ;;
+  255) clear && echo "[ESC] Setup interrupted." ;;
   esac
 }
 
