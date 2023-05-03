@@ -68,6 +68,9 @@ function confirm_settings() {
 
     set_pi_hole_password
 
+    clear
+    echo -e "Initial up configuration saved.\nPlease reboot to apply your new network settings using 'sudo reboot' ..."
+
     if [ "$environment" = upbox ]; then
       set_system_password
       rm -f $up_first_login_script
@@ -76,8 +79,6 @@ function confirm_settings() {
       reboot
     fi
 
-    clear
-    echo -e "Initial up configuration saved.\nPlease reboot to apply your new network settings using 'sudo reboot' ..."
     sleep 1
     exit 0
   fi
