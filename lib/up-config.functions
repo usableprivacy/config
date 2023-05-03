@@ -345,7 +345,7 @@ function dns() {
 
 function init() {
   if [ -f "$up_dns_config_file" ]; then
-    echo -e "\nup-config is already setup ...\n\nPlease use 'up-config dns' to change DNS options."
+    echo -e "\n initial setup of up-config already complete ...\n\nPlease use 'up-config dns' to change DNS options."
     echo -e "Use 'up-config reset' to delete your initial configuration.\n"
     sleep 1
     exit 1
