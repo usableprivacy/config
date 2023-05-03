@@ -327,6 +327,7 @@ function update() {
   if [ "$environment" != vagrant ]; then
     git -C "$up_dir" pull --rebase
   fi
+  pihole -up
 }
 
 function dns() {
