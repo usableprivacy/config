@@ -33,7 +33,7 @@ function set_pi_hole_ip() {
 
 # Set system password
 function set_system_password() {
-  echo "$new_ssh_password" | passwd "$new_ssh_password" --stdin &>/dev/null
+  echo "$new_ssh_password" | passwd --stdin up &>/dev/null
 }
 
 # Set Pi-Hole Web UI password
