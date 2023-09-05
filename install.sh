@@ -13,6 +13,7 @@ export PATH+=':/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
 # Basic knot-resolver variables
 kresd_deb_url=https://secure.nic.cz/files/knot-resolver/knot-resolver-release.deb
 kresd_release_file=/tmp/knot-resolver-release.deb
+kresd_apt_list=/etc/apt/sources.list.d/knot-resolver-latest.list
 kresd_device=dns0
 kresd_ip=127.0.0.53
 kresd_config_file=/etc/knot-resolver/kresd.conf
@@ -80,10 +81,13 @@ ln -sf $up_lib_dir/up-config.functions /usr/local/lib/up-config.functions
 echo "[✓]"
 
 echo -ne "Installing knot-resolver requirements ... \t"
-curl -s $kresd_deb_url --output $kresd_release_file
-dpkg -i $kresd_release_file &>/dev/null
-apt-get -qq update
-rm $kresd_release_file
+if [ ! -f "$kresd_apt_list" ] 
+  curl -s $kresd_deb_url --output $kresd_release_file
+  dpkg -i $kresd_release_file &>/dev/null
+  apt-get -qq update
+  rm $kresd_release_file
+fi
+
 apt-get install -qq -y knot-resolver knot-resolver-module-http lua-psl &>/dev/null
 
 if ! nmcli dev show $kresd_device &>/dev/null; then
