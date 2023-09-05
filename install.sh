@@ -81,7 +81,7 @@ ln -sf $up_lib_dir/up-config.functions /usr/local/lib/up-config.functions
 echo "[✓]"
 
 echo -ne "Installing knot-resolver requirements ... \t"
-if [ ! -f "$kresd_apt_list" ] 
+if [ ! -f "$kresd_apt_list" ]; then
   curl -s $kresd_deb_url --output $kresd_release_file
   dpkg -i $kresd_release_file &>/dev/null
   apt-get -qq update
