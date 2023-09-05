@@ -28,6 +28,7 @@ up_first_login_script=/etc/profile.d/00-up-config-init.sh
 
 up_environment=system
 pi_hole_configured=false
+pi_hole_installer_path=/usr/local/bin/pihole-installer.sh
 
 exit_on_error() {
   echo "$1"
@@ -126,8 +127,10 @@ cp $up_conf_dir/pi-hole/02-kresd.conf /etc/dnsmasq.d/
 
 echo "[✓]"
 
-curl -sSL https://install.pi-hole.net -o /usr/local/bin/pihole-installer.sh
-bash /usr/local/bin/pihole-installer.sh --unattended
+if [ ! -f "$pi_hole_installer_path" ]; then
+  curl -sSL https://install.pi-hole.net -o "$pi_hole_installer_path"
+  bash "$pi_hole_installer_path" --unattended
+fi
 
 if [ "$pi_hole_configured" = False ]; then
   pihole -a -c
