@@ -54,7 +54,7 @@ echo "
 "
 
 echo -ne "Installing up-config requirements ... \t\t"
-apt-get -qq install -y curl dialog git&>/dev/null
+apt-get -qq install -y curl dialog git &>/dev/null
 
 if [ -d "/vagrant" ]; then
   up_conf_dir=/vagrant/conf
@@ -63,7 +63,7 @@ if [ -d "/vagrant" ]; then
   up_environment=vagrant
 else
   if [ -d "$up_dir" ]; then
-    git -C "$up_dir" pull --rebase
+    git -C "$up_dir" pull --rebase &>/dev/null
   else
     git clone "$up_git_url" "$up_dir" &>/dev/null
   fi
@@ -74,7 +74,9 @@ if [ -f "/boot/up.txt" ]; then
   up_environment=upbox
 fi
 
-echo -e "Detected environment: $up_environment \n"
+echo "[✓]"
+
+echo -e "\nDetected environment: $up_environment \n"
 
 ln -sf $up_lib_dir/up-config /usr/local/bin/up-config
 ln -sf $up_lib_dir/up-config.functions /usr/local/lib/up-config.functions
@@ -136,7 +138,7 @@ if [ "$pi_hole_configured" = False ]; then
   echo -e "Reset pi-hole web login\t\t[✓]"
 fi
 
-echo -e "\n up-config setup complete [✓]"
+echo -e "\n up-config setup complete ⭐"
 
 if [ $up_environment = upbox ] && [ $up_configured = false ]; then
   echo "sudo up-config init" > $up_first_login_script
