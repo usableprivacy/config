@@ -78,18 +78,17 @@ function confirm_settings() {
     echo -e "Pi-hole admin password: $new_pihole_password"
 
     if [ "$environment" = upbox ]; then
+
       set_system_password
       echo -e "Password for user 'up': $new_ssh_password"
       rm -f "$up_first_login_script"
     fi
 
-
     echo -e "-----\nPlease reboot to apply your new network settings using 'sudo reboot' ..."
 
     sleep 1
     exit 0
-
-  fi
+    
 }
 
 # Set Knot Resolver DNS option

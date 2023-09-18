@@ -138,7 +138,7 @@ if [ "$pi_hole_configured" = False ]; then
   echo -e "Reset pi-hole web login\t\t[✓]"
 fi
 
-echo -e "\n up-config setup complete [✓]"
+echo -e "\n up-config setup complete ⭐"
 
 if [ $up_environment = upbox ] && [ $up_configured = false ]; then
   echo "sudo up-config init" > $up_first_login_script
