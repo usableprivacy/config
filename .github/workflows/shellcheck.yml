@@ -24,6 +24,9 @@ jobs:
       - name: Place up-config lib file
         run: sudo cp lib/up-config.functions /usr/local/lib/up-config.functions
 
+      - name: Place up-config file
+        run: sudo cp lib/up-config /usr/local/bin/up-config
+
       - name: Check up-config lib file
         run: ls -lah /usr/local/lib/up-config.functions
         
@@ -31,4 +34,4 @@ jobs:
         run: shellcheck install.sh
 
       - name: Check up-config
-        run: shellcheck -x lib/up-config
+        run: shellcheck -x /usr/local/bin/up-config
