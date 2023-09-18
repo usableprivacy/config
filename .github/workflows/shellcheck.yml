@@ -21,9 +21,12 @@ jobs:
       - name: Install shellcheck
         run: sudo snap install shellcheck
 
-      - name: Place up config functions file
+      - name: Place up-config lib file
         run: sudo cp lib/up-config.functions /usr/local/lib/up-config.functions
 
+      - name: Check up-config lib file
+        run: ls -lah /usr/local/lib/up-config.functions
+        
       - name: Check up-config installer
         run: shellcheck install.sh
 
