@@ -1,4 +1,5 @@
 # UP Box 4 Configuration Tool
+[![shellcheck](https://github.com/usableprivacy/config/actions/workflows/shellcheck.yml/badge.svg?branch=main)](https://github.com/usableprivacy/config/actions/workflows/shellcheck.yml)
 ___
 This tool installs and configures the basic building blocks of the **[Usable Privacy Box (v4)](https://upribox.org)**.<br>
 Use this tool to **filter ads and trackers** in your home network and to **protect your DNS traffic** against analysis and monitoring.

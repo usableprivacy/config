@@ -88,7 +88,7 @@ function confirm_settings() {
 
     sleep 1
     exit 0
-    
+  fi
 }
 
 # Set Knot Resolver DNS option

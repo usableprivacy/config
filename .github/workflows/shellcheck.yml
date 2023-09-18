@@ -2,9 +2,11 @@ name: "shellcheck"
 
 on:
   push:
-    branches: [ $default-branch, $protected-branches ]
+    branches:
+      - main
   pull_request:
-    branches: [ $default-branch ]
+    branches:
+      - main
 
 jobs:
   shellcheck:
@@ -17,13 +19,16 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install shellcheck
-        run: sudo snap install shellcheck
+        run: sudo apt-get install shellcheck -y
 
-      - name: Place up config functions file
+      - name: Place up-config lib file
         run: sudo cp lib/up-config.functions /usr/local/lib/up-config.functions
-
+  
       - name: Check up-config installer
         run: shellcheck install.sh
+
+      - name: Check up-config lib file
+        run: shellcheck /usr/local/lib/up-config.functions
 
       - name: Check up-config
         run: shellcheck -x lib/up-config
