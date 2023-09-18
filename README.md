@@ -29,7 +29,7 @@ ___
 
 ### Installation
 The UP Box 4 Configuration Tool primarily powers upriboxes based on [armbian](https://www.armbian.com/).<br>
-Other **debian-based Linux distributions** with network devices managed by **[NetworkManager](https://en.wikipedia.org/wiki/NetworkManager)** *may* work just fine.
+Any **Debian-based distribution** with **[NetworkManager](https://en.wikipedia.org/wiki/NetworkManager)** *may* work just fine.
 
 #### `curl https://raw.githubusercontent.com/usableprivacy/config/main/install.sh | bash`
 

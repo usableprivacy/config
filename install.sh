@@ -13,6 +13,7 @@ export PATH+=':/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
 # Basic knot-resolver variables
 kresd_deb_url=https://secure.nic.cz/files/knot-resolver/knot-resolver-release.deb
 kresd_release_file=/tmp/knot-resolver-release.deb
+kresd_apt_list=/etc/apt/sources.list.d/knot-resolver-latest.list
 kresd_device=dns0
 kresd_ip=127.0.0.53
 kresd_config_file=/etc/knot-resolver/kresd.conf
@@ -27,6 +28,7 @@ up_first_login_script=/etc/profile.d/00-up-config-init.sh
 
 up_environment=system
 pi_hole_configured=false
+pi_hole_installer_path=/usr/local/bin/pihole-installer.sh
 
 exit_on_error() {
   echo "$1"
@@ -52,7 +54,7 @@ echo "
 "
 
 echo -ne "Installing up-config requirements ... \t\t"
-apt-get -qq install -y curl dialog git&>/dev/null
+apt-get -qq install -y curl dialog git &>/dev/null
 
 if [ -d "/vagrant" ]; then
   up_conf_dir=/vagrant/conf
@@ -61,9 +63,9 @@ if [ -d "/vagrant" ]; then
   up_environment=vagrant
 else
   if [ -d "$up_dir" ]; then
-    git -C "$up_dir" pull --rebase
+    git -C "$up_dir" pull --rebase &>/dev/null
   else
-    git clone "$up_git_url" "$up_dir"
+    git clone "$up_git_url" "$up_dir" &>/dev/null
   fi
   ln -sf "/$up_dir/install.sh" /usr/local/bin/up-config-installer
 fi
@@ -72,18 +74,21 @@ if [ -f "/boot/up.txt" ]; then
   up_environment=upbox
 fi
 
-echo -e "Detected environment: $up_environment \n"
+echo "[✓]"
+
+echo -e "\nDetected environment: $up_environment \n"
 
 ln -sf $up_lib_dir/up-config /usr/local/bin/up-config
 ln -sf $up_lib_dir/up-config.functions /usr/local/lib/up-config.functions
 
-echo "[✓]"
-
 echo -ne "Installing knot-resolver requirements ... \t"
-curl -s $kresd_deb_url --output $kresd_release_file
-dpkg -i $kresd_release_file &>/dev/null
-apt-get -qq update
-rm $kresd_release_file
+if [ ! -f "$kresd_apt_list" ]; then
+  curl -s $kresd_deb_url --output $kresd_release_file
+  dpkg -i $kresd_release_file &>/dev/null
+  apt-get -qq update
+  rm $kresd_release_file
+fi
+
 apt-get install -qq -y knot-resolver knot-resolver-module-http lua-psl &>/dev/null
 
 if ! nmcli dev show $kresd_device &>/dev/null; then
@@ -122,8 +127,10 @@ cp $up_conf_dir/pi-hole/02-kresd.conf /etc/dnsmasq.d/
 
 echo "[✓]"
 
-curl -sSL https://install.pi-hole.net -o /usr/local/bin/pihole-installer.sh
-bash /usr/local/bin/pihole-installer.sh --unattended
+if [ ! -f "$pi_hole_installer_path" ]; then
+  curl -sSL https://install.pi-hole.net -o "$pi_hole_installer_path"
+  bash "$pi_hole_installer_path" --unattended
+fi
 
 if [ "$pi_hole_configured" = False ]; then
   pihole -a -c
