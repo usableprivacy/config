@@ -1,31 +1,33 @@
+#!/usr/bin/env bash
+
 # Set default network connection to auto (dhcp)
 function set_dhcp() {
-  nmcli con mod $current_connection_uuid ipv4.method auto >/dev/null 2>&1
-  nmcli con mod $current_connection_uuid ipv6.method auto >/dev/null 2>&1
+  nmcli con mod "$current_connection_uuid" ipv4.method auto >/dev/null 2>&1
+  nmcli con mod "$current_connection_uuid" ipv6.method auto >/dev/null 2>&1
 }
 
 # Set static IPs for default network connection
 function set_static_ip() {
-  nmcli con mod $current_connection_uuid ipv4.method manual ipv4.addresses "$new_ip_v4/$current_netmask_v4" ipv4.gateway "$current_gateway_v4" >/dev/null 2>&1
+  nmcli con mod "$current_connection_uuid" ipv4.method manual ipv4.addresses "$new_ip_v4/$current_netmask_v4" ipv4.gateway "$current_gateway_v4" >/dev/null 2>&1
   if [ "$ip_v6" = true ]; then
-    nmcli con mod $current_connection_uuid ipv6.method manual ipv6.addresses "$current_ip_v6/$current_netmask_v6" ipv6.gateway "$current_gateway_v6" >/dev/null 2>&1
+    nmcli con mod "$current_connection_uuid" ipv6.method manual ipv6.addresses "$current_ip_v6/$current_netmask_v6" ipv6.gateway "$current_gateway_v6" >/dev/null 2>&1
   fi
 }
 
 # Set Pi-hole static IP in config
 function set_pi_hole_ip() {
 
-  if grep IPV4_ADDRESS $pihole_setup_file &>/dev/null; then
-    sed -E "s/IPV4_ADDRESS=.+/IPV4_ADDRESS=$new_ip_v4\/24/g" $pihole_setup_file &> /dev/null
+  if grep IPV4_ADDRESS "$pihole_setup_file" &>/dev/null; then
+    sed -E "s/IPV4_ADDRESS=.+/IPV4_ADDRESS=$new_ip_v4\/24/g" "$pihole_setup_file" &> /dev/null
   else
-    echo -e "IPV4_ADDRESS=$new_ip_v4" >>$pihole_setup_file
+    echo -e "IPV4_ADDRESS=$new_ip_v4" >>"$pihole_setup_file"
   fi
 
   if [ "$current_ip_v6" != "" ]; then
-    if grep IPV6_ADDRESS $pihole_setup_file &>/dev/null; then
-      sed -E "s/IPV6_ADDRESS=.+/IPV6_ADDRESS=$current_ip_v6\/24/g" $pihole_setup_file  &>/dev/null
+    if grep IPV6_ADDRESS "$pihole_setup_file" &>/dev/null; then
+      sed -E "s/IPV6_ADDRESS=.+/IPV6_ADDRESS=$current_ip_v6\/24/g" "$pihole_setup_file"  &>/dev/null
     else
-      echo -e "IPV6_ADDRESS=$current_ip_v6" >>$pihole_setup_file
+      echo -e "IPV6_ADDRESS=$current_ip_v6" >>"$pihole_setup_file"
     fi
   fi
 
@@ -54,9 +56,7 @@ function validate_ip() {
 function confirm_settings() {
 
   local message="\nYour UP Box address: ${new_ip_v4}\n"
-  message+="\n⚠️  This is the last time, your passwords are displayed!\n\n"
-  message+="SYSTEM PASSWORD: ${new_ssh_password}\n"
-  message+="PIHOLE PASSWORD: ${new_pihole_password}\n\n\n"
+  message+="\n☑️  Complete the setup with \"OK\"!\n\n"
 
   #echo "$message"
 
@@ -64,25 +64,31 @@ function confirm_settings() {
   dialog --backtitle "$back_title" --title "Save your UP box configuration" --msgbox "$message" 13 60 2>&1 1>&3
   local exit_code=$?
   exec 3>&-
+
+
+
   if [ $exit_code -eq 0 ]; then
 
     set_pi_hole_password
+    clear
+
+    echo -e "\nInitial up configuration completed successfully. [✓]"
+
+    echo -e "\n⚠️ This is the last time your new passwords are displayed!\n-----"
+    echo -e "Pi-hole admin password: $new_pihole_password"
 
     if [ "$environment" = upbox ]; then
-      clear
+
       set_system_password
-      rm -f $up_first_login_script
-      echo -e "Initial up configuration saved. Automated box reboot in 5 seconds ..."
-      sleep 5
-      reboot
-    else
-      clear
-      echo -e "Initial up configuration saved.\nPlease reboot to apply your new network settings using 'sudo reboot' ..."
-      sleep 1
-      exit 0
+      echo -e "Password for user 'up': $new_ssh_password"
+      rm -f "$up_first_login_script"
     fi
 
-  fi
+    echo -e "-----\nPlease reboot to apply your new network settings using 'sudo reboot' ..."
+
+    sleep 1
+    exit 0
+    
 }
 
 # Set Knot Resolver DNS option
@@ -95,12 +101,12 @@ function set_dns_option() {
   esac
 
   if [ "$ip_v6" = true ]; then
-    sed -E "s/net\.ipv6\ =\ .+/net\.ipv6\ =\ true/g" $kresd_config_file &> /dev/null
+    sed -E "s/net\.ipv6\ =\ .+/net\.ipv6\ =\ true/g" "$kresd_config_file" &> /dev/null
   else
-    sed -E "s/net\.ipv6\ =\ .+/net\.ipv6\ =\ false/g" $kresd_config_file &> /dev/null
+    sed -E "s/net\.ipv6\ =\ .+/net\.ipv6\ =\ false/g" "$kresd_config_file" &> /dev/null
   fi
 
-  service kresd@1 restart && service kresd@2 restart
+  service kresd@1 restart && service kresd@2 restart &
 
   echo -n "$dns_option" > "$up_dns_config_file"
 
@@ -110,7 +116,7 @@ function set_dns_option() {
 function load_dns_option() {
   dns_option=3
   if [ -f "$up_dns_config_file" ]; then
-    dns_option=$(<$up_dns_config_file)
+    dns_option=$(<"$up_dns_config_file")
   fi
 }
 
@@ -140,6 +146,7 @@ function dns_dialog() {
   fi
 
 }
+
 
 
 # Change password dialog
@@ -236,7 +243,7 @@ function welcome() {
   local response=$?
   clear
   case $response in
-  0) echo "Starting initial setup ..." && network_dialog && dns_dialog && password_dialog;;
+  0) echo "Starting initial setup ..." && network_dialog && dns_dialog && password_dialog ;;
   1) clear && echo "Setup interrupted." ;;
   255) clear && echo "[ESC] Setup interrupted." ;;
   esac
@@ -253,7 +260,7 @@ function reset() {
     mv "$up_dns_config_file" "$up_dns_config_file.backup"
   fi
 
-  default_password=setup123
+  local default_password=setup123
 
   new_ssh_password="$default_password"
   new_pihole_password="$default_password"
@@ -264,7 +271,7 @@ function reset() {
 
   if [ "$environment" = upbox ]; then
     set_system_password
-    echo -e "Initial up configuration saved. Automated box reboot in 5 seconds ..."
+    echo -e "Initial up configuration complete. Automated box reboot in 5 seconds ..."
     sleep 5
     reboot
   fi
@@ -303,19 +310,20 @@ function load_system_information() {
   up_dns_config_file="/etc/up.conf"
   up_first_login_script=/etc/profile.d/00-up-config-init.sh
 
+  local default_network_device
   default_network_device=$(ip -4 route ls | grep default | tail -1 | grep -Po '(?<=dev )(\S+)')
-  current_ip_v4=$(ip -4 addr show dev $default_network_device | awk '/inet/ {print $2}' | cut -d'/' -f1)
-  current_netmask_v4=$(ip -4 addr show dev $default_network_device | awk '/inet/ {print $2}' | cut -d'/' -f2)
+  current_ip_v4=$(ip -4 addr show dev "$default_network_device" | awk '/inet/ {print $2}' | cut -d'/' -f1)
+  current_netmask_v4=$(ip -4 addr show dev "$default_network_device" | awk '/inet/ {print $2}' | cut -d'/' -f2)
   current_gateway_v4=$(ip -4 route ls | grep default | tail -1 | grep -Po '(?<=via )(\S+)')
 
   if ip -6 route ls | grep default &>/dev/null; then
-    current_ip_v6=$(ip -6 addr show dev $default_network_device | awk '/inet/ {print $2}' | cut -d'/' -f1)
-    current_netmask_v6=$(ip -6 addr show dev $default_network_device | awk '/inet/ {print $2}' | cut -d'/' -f2)
+    current_ip_v6=$(ip -6 addr show dev "$default_network_device" | awk '/inet/ {print $2}' | cut -d'/' -f1)
+    current_netmask_v6=$(ip -6 addr show dev "$default_network_device" | awk '/inet/ {print $2}' | cut -d'/' -f2)
     current_gateway_v6=$(ip -6 route ls | grep default | tail -1 | grep -Po '(?<=via )(\S+)')
     ip_v6=true
   fi
 
-  current_connection_uuid=$(nmcli -f UUID,DEVICE connection show | grep $default_network_device | awk '{print $1}')
+  current_connection_uuid=$(nmcli -f UUID,DEVICE connection show | grep "$default_network_device" | awk '{print $1}')
 
   if [ "$current_connection_uuid" = "" ]; then
     echo "Default network device $default_network_device is not managed with NetworkManager."
