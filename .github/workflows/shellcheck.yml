@@ -23,12 +23,12 @@ jobs:
 
       - name: Place up-config lib file
         run: sudo cp lib/up-config.functions /usr/local/lib/up-config.functions
-
-      - name: Check up-config lib file
-        run: ls -lah /usr/local/lib/up-config.functions
-        
+  
       - name: Check up-config installer
         run: shellcheck install.sh
+
+      - name: Check up-config lib file
+        run: shellcheck /usr/local/lib/up-config.functions
 
       - name: Check up-config
         run: shellcheck -x lib/up-config
