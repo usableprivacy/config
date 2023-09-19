@@ -137,8 +137,10 @@ if [ "$pi_hole_configured" = False ]; then
   pihole -a -c
   pihole -a -p setup123
   echo -e "Reset pi-hole web login\t\t[✓]"
-  echo $up_conf_dir/pi-hole/unfiltered-group.sql | sqlite3 /etc/pihole/gravity.db
 fi
+
+pihole -g
+cat $up_conf_dir/pi-hole/unfiltered-group.sql | sqlite3 /etc/pihole/gravity.db
 
 echo -e "\n up-config setup complete [✓]"
 
