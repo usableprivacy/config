@@ -54,7 +54,7 @@ echo "
 "
 
 echo -ne "Installing up-config requirements ... \t\t"
-apt-get -qq install -y curl dialog git &>/dev/null
+apt-get -qq install -y curl dialog git sqlite3 &>/dev/null
 
 if [ -d "/vagrant" ]; then
   up_conf_dir=/vagrant/conf
@@ -121,6 +121,7 @@ if [ -f "/etc/pi-hole/setupVars.conf" ]; then
   pi_hole_configured=True
 else
   cp $up_conf_dir/pi-hole/setupVars.conf /etc/pihole/
+  cp $up_conf_dir/pi-hole/pihole-FTL.conf /etc/pihole/
 fi
 
 cp $up_conf_dir/pi-hole/02-kresd.conf /etc/dnsmasq.d/
@@ -136,6 +137,7 @@ if [ "$pi_hole_configured" = False ]; then
   pihole -a -c
   pihole -a -p setup123
   echo -e "Reset pi-hole web login\t\t[✓]"
+  echo $up_conf_dir/pi-hole/unfiltered-group.sql | sqlite3 /etc/pihole/gravity.db
 fi
 
 echo -e "\n up-config setup complete ⭐"

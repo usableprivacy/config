@@ -252,12 +252,22 @@ function welcome() {
 # Reset UP config setup
 function reset() {
 
+  # Backup up-config and pi-hole setup configurations
   if [ -f "$pihole_setup_file" ]; then
     mv "$pihole_setup_file" "$pihole_setup_file.backup"
   fi
 
   if [ -f "$up_dns_config_file" ]; then
     mv "$up_dns_config_file" "$up_dns_config_file.backup"
+  fi
+
+  # Delete existing db files
+  if [ -f "$pihole_gravity_db" ]; then
+    rm "$pihole_gravity_db"
+  fi
+
+  if [ -f "$pihole_ftl_db" ]; then
+    rm "$pihole_ftl_db"
   fi
 
   local default_password=setup123
@@ -290,6 +300,8 @@ function load_system_information() {
   kresd_config_file=/etc/knot-resolver/kresd.conf
 
   pihole_setup_file=/etc/pihole/setupVars.conf
+  pihole_gravity_db=/etc/pihole/gravity.db
+  pihole_ftl_db=/etc/pihole/pihole-FTL.db
 
   up_dir=/opt/up-config
   up_conf_dir="$up_dir/conf"
