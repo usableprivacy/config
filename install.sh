@@ -118,7 +118,7 @@ mkdir -p /etc/pihole
 mkdir -p /etc/dnsmasq.d
 
 if [ -f "/etc/pi-hole/setupVars.conf" ]; then
-  pi_hole_configured=True
+  pi_hole_configured=true
 else
   cp $up_conf_dir/pi-hole/setupVars.conf /etc/pihole/
   cp $up_conf_dir/pi-hole/pihole-FTL.conf /etc/pihole/
@@ -133,14 +133,15 @@ if [ ! -f "$pi_hole_installer_path" ]; then
   bash "$pi_hole_installer_path" --unattended
 fi
 
-if [ "$pi_hole_configured" = False ]; then
-  pihole -a -c
+if [ "$pi_hole_configured" = false ]; then
   pihole -a -p setup123
   echo -e "Reset pi-hole web login\t\t[✓]"
 fi
 
 pihole -g
+sleep 1
 cat $up_conf_dir/pi-hole/unfiltered-group.sql | sqlite3 /etc/pihole/gravity.db
+echo -e "Reset gravity db\t\t[✓]"
 
 echo -e "\n up-config setup complete [✓]"
 
