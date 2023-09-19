@@ -148,7 +148,6 @@ function dns_dialog() {
 }
 
 
-
 # Change password dialog
 function password_dialog() {
   local title="🗝️  Configure secure passwords"
@@ -252,6 +251,8 @@ function welcome() {
 # Reset UP config setup
 function reset() {
 
+  echo -e "\nStarting up-config reset ... \n"
+
   # Backup up-config and pi-hole setup configurations
   if [ -f "$pihole_setup_file" ]; then
     mv "$pihole_setup_file" "$pihole_setup_file.backup"
@@ -270,18 +271,20 @@ function reset() {
     rm "$pihole_ftl_db"
   fi
 
-  local default_password=setup123
 
+  # Switch network interface to DHCP
+  set_dhcp
+
+  # Run up-config installer with default passwords
+  local default_password=setup123
   new_ssh_password="$default_password"
   new_pihole_password="$default_password"
-
-  set_dhcp
 
   up-config-installer
 
   if [ "$environment" = upbox ]; then
     set_system_password
-    echo -e "Initial up configuration complete. Automated box reboot in 5 seconds ..."
+    echo -e "up-config reset complete. Automated box reboot in 5 seconds ..."
     sleep 5
     reboot
   fi

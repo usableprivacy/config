@@ -140,7 +140,7 @@ if [ "$pi_hole_configured" = False ]; then
   echo $up_conf_dir/pi-hole/unfiltered-group.sql | sqlite3 /etc/pihole/gravity.db
 fi
 
-echo -e "\n up-config setup complete ⭐"
+echo -e "\n up-config setup complete [✓]"
 
 if [ $up_environment = upbox ] && [ $up_configured = false ]; then
   echo "sudo up-config init" > $up_first_login_script
