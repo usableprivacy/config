@@ -362,7 +362,7 @@ function load_system_information() {
 
 function update() {
   if [ "$environment" != vagrant ]; then
-    git -C "$up_dir" pull --rebase
+    git -C "$up_dir" pull --rebase --quiet
   fi
   pihole -up
 }
