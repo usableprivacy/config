@@ -3,7 +3,11 @@
 # Set default network connection to auto (dhcp)
 function set_dhcp() {
   nmcli con mod "$current_connection_uuid" ipv4.method auto >/dev/null 2>&1
+  nmcli con mod "$current_connection_uuid" ipv4.gateway ""  >/dev/null 2>&1
+  nmcli con mod "$current_connection_uuid" ipv4.address ""  >/dev/null 2>&1
   nmcli con mod "$current_connection_uuid" ipv6.method auto >/dev/null 2>&1
+  nmcli con mod "$current_connection_uuid" ipv6.gateway ""  >/dev/null 2>&1
+  nmcli con mod "$current_connection_uuid" ipv6.address ""  >/dev/null 2>&1
 }
 
 # Set static IPs for default network connection
@@ -358,7 +362,7 @@ function load_system_information() {
 
 function update() {
   if [ "$environment" != vagrant ]; then
-    git -C "$up_dir" pull --rebase
+    git -C "$up_dir" pull --rebase --quiet
   fi
   pihole -up
 }
