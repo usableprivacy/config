@@ -256,13 +256,20 @@ function reset() {
   # Backup up-config and pi-hole setup configurations
   if [ -f "$pihole_setup_file" ]; then
     mv "$pihole_setup_file" "$pihole_setup_file.backup"
+    cp "$up_conf_dir/pi-hole/setupVars.conf" "$pihole_setup_file"
   fi
 
+  if [ -f "$pihole_ftlconf_file" ]; then
+    mv "$pihole_ftlconf_file" "$pihole_ftlconf_file.backup"
+    cp "$up_conf_dir/pi-hole/pihole-FTL.conf" "$pihole_ftlconf_file"
+  fi
+
+  # Backup up4 DNS config file
   if [ -f "$up_dns_config_file" ]; then
     mv "$up_dns_config_file" "$up_dns_config_file.backup"
   fi
 
-  # Delete existing db files
+  # Delete existing Pi-hole DB files
   if [ -f "$pihole_gravity_db" ]; then
     rm "$pihole_gravity_db"
   fi
@@ -303,6 +310,7 @@ function load_system_information() {
   kresd_config_file=/etc/knot-resolver/kresd.conf
 
   pihole_setup_file=/etc/pihole/setupVars.conf
+  pihole_ftlconf_file=/etc/pihole/pihole-FTL.conf
   pihole_gravity_db=/etc/pihole/gravity.db
   pihole_ftl_db=/etc/pihole/pihole-FTL.db
 
