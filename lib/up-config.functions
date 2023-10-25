@@ -273,13 +273,13 @@ function reset() {
     mv "$up_dns_config_file" "$up_dns_config_file.backup"
   fi
 
-  # Delete existing Pi-hole DB files
+  # Clean Pi-hole databases
   if [ -f "$pihole_gravity_db" ]; then
-    rm "$pihole_gravity_db"
+    cat "$up_conf_dir/pi-hole/clean-gravity.conf" | sqlite3 "$pihole_gravity_db"
   fi
 
   if [ -f "$pihole_ftl_db" ]; then
-    rm "$pihole_ftl_db"
+    cat "$up_conf_dir/pi-hole/clean-ftl.conf" | sqlite3 "$pihole_ftl_db"
   fi
 
 
@@ -293,11 +293,13 @@ function reset() {
 
   up-config-installer
 
-  if [ "$environment" = upbox ]; then
+  if [ "$environment" = upbox ] ; then
     set_system_password
-    echo -e "up-config reset complete. Automated box reboot in 5 seconds ..."
-    sleep 5
-    reboot
+    if [ -z  "${up_image_creation}" ]; then
+      echo -e "up-config reset complete. Automated box reboot in 5 seconds ..."
+      sleep 5
+      reboot
+    fi
   fi
 
   echo -e "\nup-config reset complete. Please reboot with 'sudo reboot' ..."
