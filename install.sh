@@ -139,7 +139,7 @@ fi
 
 pihole -g
 sleep 1
-cat $up_conf_dir/pi-hole/unfiltered-group.sql | sqlite3 /etc/pihole/gravity.db
+sqlite3 /etc/pihole/gravity.db < "$up_conf_dir/pi-hole/unfiltered-group.sql"
 
 echo -e "\n up-config setup complete [✓]"
 
