@@ -263,9 +263,9 @@ function reset() {
     cp "$up_conf_dir/pi-hole/setupVars.conf" "$pihole_setup_file"
   fi
 
-  if [ -f "$pihole_ftlconf_file" ]; then
-    mv "$pihole_ftlconf_file" "$pihole_ftlconf_file.backup"
-    cp "$up_conf_dir/pi-hole/pihole-FTL.conf" "$pihole_ftlconf_file"
+  if [ -f "$pihole_ftl_conf_file" ]; then
+    mv "$pihole_ftl_conf_file" "$pihole_ftl_conf_file.backup"
+    cp "$up_conf_dir/pi-hole/pihole-FTL.conf" "$pihole_ftl_conf_file"
   fi
 
   # Backup up4 DNS config file
@@ -316,7 +316,7 @@ function load_system_information() {
   kresd_config_file=/etc/knot-resolver/kresd.conf
 
   pihole_setup_file=/etc/pihole/setupVars.conf
-  pihole_ftlconf_file=/etc/pihole/pihole-FTL.conf
+  pihole_ftl_conf_file=/etc/pihole/pihole-FTL.conf
   pihole_gravity_db=/etc/pihole/gravity.db
   pihole_ftl_db=/etc/pihole/pihole-FTL.db
 
