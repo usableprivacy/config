@@ -275,11 +275,11 @@ function reset() {
 
   # Clean Pi-hole databases
   if [ -f "$pihole_gravity_db" ]; then
-    cat "$up_conf_dir/pi-hole/clean-gravity.conf" | sqlite3 "$pihole_gravity_db"
+    sqlite3 "$pihole_gravity_db" < "$up_conf_dir/pi-hole/clean-gravity.conf"
   fi
 
   if [ -f "$pihole_ftl_db" ]; then
-    cat "$up_conf_dir/pi-hole/clean-ftl.conf" | sqlite3 "$pihole_ftl_db"
+    sqlite3 "$pihole_ftl_db" < "$up_conf_dir/pi-hole/clean-ftl.conf"
   fi
 
 
