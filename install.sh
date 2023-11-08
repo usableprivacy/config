@@ -137,7 +137,6 @@ if [ "$pi_hole_configured" = false ]; then
   pihole -a -p setup123
 fi
 
-pihole -g
 sleep 1
 sqlite3 /etc/pihole/gravity.db < "$up_conf_dir/pi-hole/unfiltered-group.sql"
 
