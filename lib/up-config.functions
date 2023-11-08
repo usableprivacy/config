@@ -257,21 +257,10 @@ function reset() {
 
   echo -e "\nStarting up-config reset ... \n"
 
-  # Backup up-config and pi-hole setup configurations
-  if [ -f "$pihole_setup_file" ]; then
-    mv "$pihole_setup_file" "$pihole_setup_file.backup"
-    cp "$up_conf_dir/pi-hole/setupVars.conf" "$pihole_setup_file"
-  fi
-
-  if [ -f "$pihole_ftl_conf_file" ]; then
-    mv "$pihole_ftl_conf_file" "$pihole_ftl_conf_file.backup"
-    cp "$up_conf_dir/pi-hole/pihole-FTL.conf" "$pihole_ftl_conf_file"
-  fi
-
-  # Backup up4 DNS config file
-  if [ -f "$up_dns_config_file" ]; then
-    mv "$up_dns_config_file" "$up_dns_config_file.backup"
-  fi
+  # Clean custom configurations
+  rm -f "$pihole_setup_file"
+  rm -f "$pihole_ftl_conf_file"
+  rm -f "$up_dns_config_file"
 
   # Clean Pi-hole databases
   if [ -f "$pihole_gravity_db" ]; then
@@ -282,18 +271,13 @@ function reset() {
     sqlite3 "$pihole_ftl_db" < "$up_conf_dir/pi-hole/clean-ftl.sql"
   fi
 
-
   # Switch network interface to DHCP
   set_dhcp
 
   # Run up-config installer with default passwords
-  local default_password=setup123
-  new_ssh_password="$default_password"
-  new_pihole_password="$default_password"
+  new_ssh_password="setup123"
 
-  if [ -z  "${up_image_creation}" ]; then
-    up-config-installer
-  fi
+  up-config-installer
 
   if [ "$environment" = upbox ] ; then
     set_system_password
