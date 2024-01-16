@@ -327,13 +327,13 @@ function load_system_information() {
 
   local default_network_device
   default_network_device=$(ip -4 route ls | grep default | tail -1 | grep -Po '(?<=dev )(\S+)')
-  current_ip_v4=$(ip -4 addr show dev "$default_network_device" | awk '/inet/ {print $2}' | cut -d'/' -f1)
+  current_ip_v4=$(ip -4 addr show dev "$default_network_device" | awk '/inet/ {print $2; exit}' | cut -d'/' -f1)
   current_netmask_v4=$(ip -4 addr show dev "$default_network_device" | awk '/inet/ {print $2}' | cut -d'/' -f2)
   current_gateway_v4=$(ip -4 route ls | grep default | tail -1 | grep -Po '(?<=via )(\S+)')
 
   if ip -6 route ls | grep default &>/dev/null; then
     current_ip_v6=$(ip -6 addr show dev "$default_network_device" | awk '/inet/ {print $2}' | cut -d'/' -f1)
-    current_netmask_v6=$(ip -6 addr show dev "$default_network_device" | awk '/inet/ {print $2}' | cut -d'/' -f2)
+    current_netmask_v6=$(ip -6 addr show dev "$default_network_device" | awk '/inet/ {print $2; exit}' | cut -d'/' -f2)
     current_gateway_v6=$(ip -6 route ls | grep default | tail -1 | grep -Po '(?<=via )(\S+)')
     ip_v6=true
   fi
