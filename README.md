@@ -48,4 +48,4 @@ Update the up-config configuration utility.
 
 ___
 
-(C) [NysosTech e.U.](https://nysos.net) 2023
+(C) [NysosTech e.U.](https://nysos.net) 2024
