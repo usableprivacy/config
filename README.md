@@ -17,7 +17,7 @@ Use this tool to **filter ads and trackers** in your home network and to **prote
 The UP Box Configuration Tool ships four different DNS configurations:
  * `plain`: Unencrypted DNS to [Cloudflare](https://www.cloudflare.com/dns/) and [Google](https://developers.google.com/speed/public-dns).
  * `recursive`: Recursive resolver with unencrypted DNS to [Authoritative DNS server](https://en.wikipedia.org/wiki/Domain_Name_System#Authoritative_name_server). 
- * `mix`: **Encrypted DNS** over TLS split between [Cloudflare](https://www.cloudflare.com/dns/), [Applied Privacy](https://applied-privacy.net/services/dns/) [Digitale Gesellschaft](https://www.digitale-gesellschaft.ch/dns/), [Quad9](https://www.quad9.net/). 
+ * `mix`: **Encrypted DNS** over TLS split between [Cloudflare](https://www.cloudflare.com/dns/), [Applied Privacy](https://applied-privacy.net/services/dns/), [Digitale Gesellschaft](https://www.digitale-gesellschaft.ch/dns/), [Quad9](https://www.quad9.net/). 
  * `private`: **Encrypted DNS** over TLS split between [Applied Privacy](https://applied-privacy.net/services/dns/), [Digitale Gesellschaft](https://www.digitale-gesellschaft.ch/dns/).
 
 The four configuration options are loosely sorted by the privacy-protection they offer. 
