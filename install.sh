@@ -11,9 +11,8 @@ set -e
 export PATH+=':/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
 
 # Basic knot-resolver variables
-kresd_deb_url=https://secure.nic.cz/files/knot-resolver/knot-resolver-release.deb
-kresd_release_file=/tmp/knot-resolver-release.deb
-kresd_apt_list=/etc/apt/sources.list.d/knot-resolver-latest.list
+kresd_repo_script_url=https://pkg.labs.nic.cz/doc/scripts/enable-repo-cznic-labs.sh
+kresd_repo_script_path=/tmp/enable-repo-cznic-labs.sh
 kresd_device=dns0
 kresd_ip=127.0.0.53
 kresd_config_file=/etc/knot-resolver/kresd.conf
@@ -81,15 +80,19 @@ echo -e "\nDetected environment: $up_environment \n"
 ln -sf $up_lib_dir/up-config /usr/local/bin/up-config
 ln -sf $up_lib_dir/up-config.functions /usr/local/lib/up-config.functions
 
-echo -ne "Installing knot-resolver requirements ... \t"
-if [ ! -f "$kresd_apt_list" ]; then
-  curl -s $kresd_deb_url --output $kresd_release_file
-  dpkg -i $kresd_release_file &>/dev/null
-  apt-get -qq update
-  rm $kresd_release_file
+echo -ne "Setup knot-resolver repo ... \t"
+
+# Remove legacy knot-resolver repo
+legacy_apt_installed=$(dpkg-query -W --showformat='${db:Status-Status}' knot-resolver-release 2>&1) || true
+if [[ "$legacy_apt_installed" == "installed" ]]; then
+  apt-get remove --purge knot-resolver-release > /dev/null 2>&1
 fi
 
-apt-get install -qq -y knot-resolver knot-resolver-module-http lua-psl &>/dev/null
+curl -sSL "$kresd_repo_script_url" -o "$kresd_repo_script_path"
+bash "$kresd_repo_script_path" knot-resolver > /dev/null 2>&1
+
+apt-get -qq update &>/dev/null
+apt-get -y install knot-resolver knot-resolver-module-http lua-psl &>/dev/null
 
 if ! nmcli dev show $kresd_device &>/dev/null; then
   nmcli connection add type dummy ifname $kresd_device ipv4.method manual ipv4.addresses $kresd_ip/24 &>/dev/null
@@ -105,7 +108,6 @@ if ! [ -f "/etc/up.conf" ]; then
   else
     up_configured=true
 fi
-
 
 systemctl enable --now kresd@1.service &>/dev/null
 systemctl enable --now kresd@2.service &>/dev/null
