@@ -83,7 +83,7 @@ ln -sf $up_lib_dir/up-config.functions /usr/local/lib/up-config.functions
 echo -ne "Setup knot-resolver repo ... \t"
 
 # Remove legacy knot-resolver repo
-legacy_apt_installed=$(dpkg-query -W --showformat='${db:Status-Status}' knot-resolver-release 2>&1) || status=$?
+legacy_apt_installed=$(dpkg-query -W --showformat='${db:Status-Status}' knot-resolver-release 2>&1) || true
 if [[ "$legacy_apt_installed" == "installed" ]]; then
   apt-get remove --purge knot-resolver-release > /dev/null 2>&1
 fi
