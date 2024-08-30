@@ -26,7 +26,6 @@ up_configured=false
 up_first_login_script=/etc/profile.d/00-up-config-init.sh
 
 up_environment=system
-pi_hole_configured=false
 pi_hole_installer_path=/usr/local/bin/pihole-installer.sh
 
 exit_on_error() {
@@ -119,9 +118,7 @@ echo -ne "Preparing pi-hole setup ... \t\t\t"
 mkdir -p /etc/pihole
 mkdir -p /etc/dnsmasq.d
 
-if [ -f "/etc/pi-hole/setupVars.conf" ]; then
-  pi_hole_configured=true
-else
+if [ ! -f "/etc/pi-hole/setupVars.conf" ]; then
   cp $up_conf_dir/pi-hole/setupVars.conf /etc/pihole/
   cp $up_conf_dir/pi-hole/pihole-FTL.conf /etc/pihole/
 fi
@@ -135,7 +132,7 @@ if [ ! -f "$pi_hole_installer_path" ]; then
   bash "$pi_hole_installer_path" --unattended
 fi
 
-if [ "$pi_hole_configured" = false ]; then
+if [ -f "/etc/pi-hole/setupVars.conf" ]; then
   pihole -a -p setup123
 fi
 
