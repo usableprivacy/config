@@ -80,7 +80,7 @@ echo -e "\nDetected environment: $up_environment \n"
 ln -sf $up_lib_dir/up-config /usr/local/bin/up-config
 ln -sf $up_lib_dir/up-config.functions /usr/local/lib/up-config.functions
 
-echo -ne "Setup knot-resolver repo ... \t"
+echo -ne "Setup knot-resolver repo ... \t\t\t"
 
 # Remove legacy knot-resolver repo
 legacy_apt_installed=$(dpkg-query -W --showformat='${db:Status-Status}' knot-resolver-release 2>&1) || true
