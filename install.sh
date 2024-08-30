@@ -85,7 +85,7 @@ echo -ne "Setup knot-resolver repo ... \t"
 # Remove legacy knot-resolver repo
 legacy_apt_installed=$(dpkg-query -W --showformat='${db:Status-Status}' knot-resolver-release 2>&1) || true
 if [[ "$legacy_apt_installed" == "installed" ]]; then
-  apt-get remove --purge knot-resolver-release > /dev/null 2>&1
+  apt-get remove -y --purge knot-resolver-release > /dev/null 2>&1
 fi
 
 curl -sSL "$kresd_repo_script_url" -o "$kresd_repo_script_path"
