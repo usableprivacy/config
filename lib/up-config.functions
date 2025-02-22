@@ -44,7 +44,7 @@ function set_system_password() {
 
 # Set Pi-Hole Web UI password
 function set_pi_hole_password() {
-  pihole -a -p "$new_pihole_password" &>/dev/null
+  pihole setpassword "$new_pihole_password" &>/dev/null
 }
 
 # Basic regex check if string is an IP

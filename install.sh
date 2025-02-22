@@ -90,6 +90,9 @@ fi
 curl -sSL "$kresd_repo_script_url" -o "$kresd_repo_script_path"
 bash "$kresd_repo_script_path" knot-resolver > /dev/null 2>&1
 
+echo "[✓]"
+echo -ne "Install knot-resolver ... \t\t\t"
+
 apt-get -qq update &>/dev/null
 apt-get -y install knot-resolver knot-resolver-module-http lua-psl &>/dev/null
 
@@ -104,6 +107,7 @@ echo -ne "Enabling knot-resolver ... \t\t\t"
 if ! [ -f "/etc/up.conf" ]; then
     rm -f $kresd_config_file
     cp $up_conf_dir/kresd/mix.conf $kresd_config_file
+    chgrp knot-resolver $kresd_config_file
   else
     up_configured=true
 fi
@@ -123,7 +127,7 @@ if [ ! -f "/etc/pi-hole/setupVars.conf" ]; then
   cp $up_conf_dir/pi-hole/pihole-FTL.conf /etc/pihole/
 fi
 
-cp $up_conf_dir/pi-hole/02-kresd.conf /etc/dnsmasq.d/
+#cp $up_conf_dir/pi-hole/02-kresd.conf /etc/dnsmasq.d/
 
 echo "[✓]"
 
@@ -132,12 +136,21 @@ if [ ! -f "$pi_hole_installer_path" ]; then
   bash "$pi_hole_installer_path" --unattended
 fi
 
-if [ -f "/etc/pi-hole/setupVars.conf" ]; then
-  pihole -a -p setup123
-fi
+pihole-FTL --config misc.dnsmasq_lines '[ "except-interface=dns0", "bind-interfaces"]' &>/dev/null
+pihole-FTL --config misc.delay_startup 10 &>/dev/null
+pihole-FTL --config dns.upstreams '[ "127.0.0.53", "127.0.0.53" ]' &>/dev/null
+pihole-FTL --config webserver.port 443os,[::]:443os &>/dev/null
+pihole-FTL --config dns.queryLogging false &>/dev/null
+pihole-FTL --config misc.privacylevel 1 &>/dev/null
+
+sudo service pihole-FTL restart
+
+#if [ -f "/etc/pi-hole/setupVars.conf" ]; then
+#  pihole -a -p setup123
+#fi
 
 sleep 1
-sqlite3 /etc/pihole/gravity.db < "$up_conf_dir/pi-hole/unfiltered-group.sql"
+#sqlite3 /etc/pihole/gravity.db < "$up_conf_dir/pi-hole/unfiltered-group.sql"
 
 echo -e "\n up-config setup complete [✓]"
 
