@@ -63,7 +63,7 @@ else
   if [ -d "$up_dir" ]; then
     git -C "$up_dir" pull --rebase &>/dev/null
   else
-    git clone "$up_git_url" "$up_dir" &>/dev/null
+    git clone -b pihole-v6 "$up_git_url" "$up_dir" &>/dev/null
   fi
   ln -sf "/$up_dir/install.sh" /usr/local/bin/up-config-installer
 fi
@@ -142,7 +142,7 @@ pihole-FTL --config misc.etc_dnsmasq_d true &>/dev/null
 #pihole-FTL --config misc.dnsmasq_lines '[ "except-interface=dns0", "bind-interfaces"]' &>/dev/null
 pihole-FTL --config misc.delay_startup 10 &>/dev/null
 pihole-FTL --config dns.upstreams '[ "127.0.0.53", "127.0.0.53" ]' &>/dev/null
-pihole-FTL --config webserver.port 443os,[::]:443os &>/dev/null
+pihole-FTL --config webserver.port 127.0.0.1:8080o,443os,[::]:443os &>/dev/null
 pihole-FTL --config dns.queryLogging false &>/dev/null
 pihole-FTL --config misc.privacylevel 1 &>/dev/null
 
