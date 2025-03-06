@@ -127,7 +127,7 @@ if [ ! -f "/etc/pi-hole/setupVars.conf" ]; then
   cp $up_conf_dir/pi-hole/pihole-FTL.conf /etc/pihole/
 fi
 
-#cp $up_conf_dir/pi-hole/02-kresd.conf /etc/dnsmasq.d/
+cp $up_conf_dir/pi-hole/02-kresd.conf /etc/dnsmasq.d/
 
 echo "[✓]"
 
@@ -136,7 +136,10 @@ if [ ! -f "$pi_hole_installer_path" ]; then
   bash "$pi_hole_installer_path" --unattended
 fi
 
-pihole-FTL --config misc.dnsmasq_lines '[ "except-interface=dns0", "bind-interfaces"]' &>/dev/null
+sudo 
+
+pihole-FTL --config misc.etc_dnsmasq_d true &>/dev/null
+#pihole-FTL --config misc.dnsmasq_lines '[ "except-interface=dns0", "bind-interfaces"]' &>/dev/null
 pihole-FTL --config misc.delay_startup 10 &>/dev/null
 pihole-FTL --config dns.upstreams '[ "127.0.0.53", "127.0.0.53" ]' &>/dev/null
 pihole-FTL --config webserver.port 443os,[::]:443os &>/dev/null
