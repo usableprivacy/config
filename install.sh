@@ -102,21 +102,6 @@ fi
 
 echo "[✓]"
 
-echo -ne "Enabling knot-resolver ... \t\t\t"
-
-if ! [ -f "/etc/up.conf" ]; then
-    rm -f $kresd_config_file
-    cp $up_conf_dir/kresd/mix.conf $kresd_config_file
-    chgrp knot-resolver $kresd_config_file
-  else
-    up_configured=true
-fi
-
-systemctl enable --now kresd@1.service &>/dev/null
-systemctl enable --now kresd@2.service &>/dev/null
-
-echo "[✓]"
-
 echo -ne "Preparing pi-hole setup ... \t\t\t"
 
 mkdir -p /etc/pihole
@@ -154,6 +139,21 @@ sleep 1
 #sqlite3 /etc/pihole/gravity.db < "$up_conf_dir/pi-hole/unfiltered-group.sql"
 
 echo -e "\n up-config setup complete [✓]"
+
+echo -ne "Enabling knot-resolver ... \t\t\t"
+
+if ! [ -f "/etc/up.conf" ]; then
+    rm -f $kresd_config_file
+    cp $up_conf_dir/kresd/mix.conf $kresd_config_file
+    chgrp knot-resolver $kresd_config_file
+  else
+    up_configured=true
+fi
+
+systemctl enable --now kresd@1.service &>/dev/null
+systemctl enable --now kresd@2.service &>/dev/null
+
+echo "[✓]"
 
 if [ $up_environment = upbox ] && [ $up_configured = false ]; then
   echo "sudo up-config init" > $up_first_login_script
