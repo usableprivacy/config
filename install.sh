@@ -138,8 +138,6 @@ sudo service pihole-FTL restart
 sleep 1
 #sqlite3 /etc/pihole/gravity.db < "$up_conf_dir/pi-hole/unfiltered-group.sql"
 
-echo -e "\n up-config setup complete [✓]"
-
 echo -ne "Enabling knot-resolver ... \t\t\t"
 
 if ! [ -f "/etc/up.conf" ]; then
@@ -158,5 +156,7 @@ echo "[✓]"
 if [ $up_environment = upbox ] && [ $up_configured = false ]; then
   echo "sudo up-config init" > $up_first_login_script
 fi
+
+echo -e "\n up-config setup complete [✓]"
 
 echo -e "\nPlease run 'up-config init' to complete the up-box setup."
