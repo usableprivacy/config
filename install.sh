@@ -136,8 +136,6 @@ if [ ! -f "$pi_hole_installer_path" ]; then
   bash "$pi_hole_installer_path" --unattended
 fi
 
-sudo 
-
 pihole-FTL --config misc.etc_dnsmasq_d true &>/dev/null
 #pihole-FTL --config misc.dnsmasq_lines '[ "except-interface=dns0", "bind-interfaces"]' &>/dev/null
 pihole-FTL --config misc.delay_startup 10 &>/dev/null
