@@ -122,7 +122,6 @@ if [ ! -f "$pi_hole_installer_path" ]; then
 fi
 
 pihole-FTL --config misc.etc_dnsmasq_d true &>/dev/null
-#pihole-FTL --config misc.dnsmasq_lines '[ "except-interface=dns0", "bind-interfaces"]' &>/dev/null
 pihole-FTL --config misc.delay_startup 10 &>/dev/null
 pihole-FTL --config dns.upstreams '[ "127.0.0.53", "127.0.0.53" ]' &>/dev/null
 pihole-FTL --config webserver.port 127.0.0.1:8080o,443os,[::]:443os &>/dev/null
@@ -136,7 +135,7 @@ sudo service pihole-FTL restart
 #fi
 
 sleep 1
-#sqlite3 /etc/pihole/gravity.db < "$up_conf_dir/pi-hole/unfiltered-group.sql"
+sqlite3 /etc/pihole/gravity.db < "$up_conf_dir/pi-hole/unfiltered-group.sql"
 
 echo -ne "Enabling knot-resolver ... \t\t\t"
 
