@@ -130,9 +130,9 @@ pihole-FTL --config misc.privacylevel 1 &>/dev/null
 
 sudo service pihole-FTL restart
 
-#if [ -f "/etc/pi-hole/setupVars.conf" ]; then
-#  pihole -a -p setup123
-#fi
+if [ -f "/etc/pi-hole/setupVars.conf" ]; then
+  pihole setpassword setup123
+fi
 
 sleep 1
 sqlite3 /etc/pihole/gravity.db < "$up_conf_dir/pi-hole/unfiltered-group.sql"
