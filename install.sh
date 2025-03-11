@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
-# Reset: remove / overwrite specific config options; switch to dhcp; run installer, if box -> reset system password
-# up-config: if box -> hook setup script; set system password; set status /opt/up-config/setup
-#
+# Source: https://github.com/usableprivacy/config
+# NysosTech e.U.
 
 # -e option instructs bash to immediately exit if any command [1] has a non-zero exit status
 set -e
@@ -20,13 +19,17 @@ kresd_config_file=/etc/knot-resolver/kresd.conf
 # Basic up-config variables
 up_dir=/opt/up-config
 up_git_url=https://github.com/usableprivacy/config.git
+up_git_branch=pihole-v6
 up_conf_dir="$up_dir/conf"
 up_lib_dir="$up_dir/lib"
 up_configured=false
 up_first_login_script=/etc/profile.d/00-up-config-init.sh
 
 up_environment=system
+
+# pi-hole specific configuration
 pi_hole_installer_path=/usr/local/bin/pihole-installer.sh
+export PIHOLE_SKIP_OS_CHECK=true
 
 exit_on_error() {
   echo "$1"
@@ -63,7 +66,7 @@ else
   if [ -d "$up_dir" ]; then
     git -C "$up_dir" pull --rebase &>/dev/null
   else
-    git clone -b pihole-v6 "$up_git_url" "$up_dir" &>/dev/null
+    git clone -b "$up_git_branch" "$up_git_url" "$up_dir" &>/dev/null
   fi
   ln -sf "/$up_dir/install.sh" /usr/local/bin/up-config-installer
 fi
@@ -91,6 +94,7 @@ curl -sSL "$kresd_repo_script_url" -o "$kresd_repo_script_path"
 bash "$kresd_repo_script_path" knot-resolver > /dev/null 2>&1
 
 echo "[✓]"
+
 echo -ne "Install knot-resolver ... \t\t\t"
 
 apt-get -qq update &>/dev/null
@@ -107,9 +111,12 @@ echo -ne "Preparing pi-hole setup ... \t\t\t"
 mkdir -p /etc/pihole
 mkdir -p /etc/dnsmasq.d
 
-if [ ! -f "/etc/pi-hole/setupVars.conf" ]; then
-  cp $up_conf_dir/pi-hole/setupVars.conf /etc/pihole/
-  cp $up_conf_dir/pi-hole/pihole-FTL.conf /etc/pihole/
+if [ -f "/etc/pi-hole/setupVars.conf" ]; then
+  mv /etc/pi-hole/setupVars.conf /etc/pi-hole/setupVars.conf.backup
+fi
+
+if [ ! -f "/etc/pi-hole/pihole.toml" ]; then
+  cp $up_conf_dir/pi-hole/pihole.toml /etc/pihole/pihole.toml
 fi
 
 cp $up_conf_dir/pi-hole/02-kresd.conf /etc/dnsmasq.d/
@@ -119,20 +126,17 @@ echo "[✓]"
 if [ ! -f "$pi_hole_installer_path" ]; then
   curl -sSL https://install.pi-hole.net -o "$pi_hole_installer_path"
   bash "$pi_hole_installer_path" --unattended
+  pihole -g
 fi
 
-pihole-FTL --config misc.etc_dnsmasq_d true &>/dev/null
-pihole-FTL --config misc.delay_startup 10 &>/dev/null
-pihole-FTL --config dns.upstreams '[ "127.0.0.53", "127.0.0.53" ]' &>/dev/null
-pihole-FTL --config webserver.port 127.0.0.1:8080o,443os,[::]:443os &>/dev/null
-pihole-FTL --config dns.queryLogging false &>/dev/null
-pihole-FTL --config misc.privacylevel 1 &>/dev/null
+#pihole-FTL --config misc.etc_dnsmasq_d true &>/dev/null
+#pihole-FTL --config misc.delay_startup 10 &>/dev/null
+#pihole-FTL --config dns.upstreams '[ "127.0.0.53", "127.0.0.53" ]' &>/dev/null
+#pihole-FTL --config webserver.port 127.0.0.1:8080o,443os,[::]:443os &>/dev/null
+#pihole-FTL --config dns.queryLogging false &>/dev/null
+#pihole-FTL --config misc.privacylevel 1 &>/dev/null
 
-sudo service pihole-FTL restart
-
-if [ -f "/etc/pi-hole/setupVars.conf" ]; then
-  pihole setpassword setup123
-fi
+#sudo service pihole-FTL restart
 
 sleep 1
 sqlite3 /etc/pihole/gravity.db < "$up_conf_dir/pi-hole/unfiltered-group.sql"
