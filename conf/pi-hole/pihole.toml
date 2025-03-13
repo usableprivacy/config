@@ -1,7 +1,7 @@
 # Pi-hole configuration file (v6.0.4)
 # Encoding: UTF-8
 # This file is managed by pihole-FTL
-# Last updated on 2025-03-11 00:00:00 UTC
+# Last updated on 2025-03-13 00:00:00 UTC
 
 [dns]
   # Array of upstream DNS servers used by Pi-hole
@@ -658,7 +658,7 @@
   #
   # Possible values are:
   #     comma-separated list of <[ip_address:]port>
-  port = "127.0.0.1:8080o,443os,[::]:443os" ### CHANGED, default = "80o,443os,[::]:80o,[::]:443os"
+  port = "127.0.1.1:8080o,443os,[::]:443os" ### CHANGED, default = "80o,443os,[::]:80o,[::]:443os"
 
   # Maximum number of worker threads allowed.
   # The Pi-hole web server handles each incoming connection in a separate thread.
