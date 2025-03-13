@@ -44,7 +44,7 @@ function set_system_password() {
 
 # Set Pi-Hole Web UI password
 function set_pi_hole_password() {
-  pihole -a -p "$new_pihole_password" &>/dev/null
+  pihole setpassword "$new_pihole_password" &>/dev/null
 }
 
 # Basic regex check if string is an IP
@@ -259,6 +259,7 @@ function reset() {
 
   # Clean custom configurations
   rm -f "$pihole_setup_file"
+  rm -f "$pihole_toml_conf_file"
   rm -f "$pihole_ftl_conf_file"
   rm -f "$up_dns_config_file"
 
@@ -302,6 +303,7 @@ function load_system_information() {
   kresd_config_file=/etc/knot-resolver/kresd.conf
 
   pihole_setup_file=/etc/pihole/setupVars.conf
+  pihole_toml_conf_file=/etc/pihole/pihole.toml
   pihole_ftl_conf_file=/etc/pihole/pihole-FTL.conf
   pihole_gravity_db=/etc/pihole/gravity.db
   pihole_ftl_db=/etc/pihole/pihole-FTL.db
