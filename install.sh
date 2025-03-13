@@ -19,7 +19,7 @@ kresd_config_file=/etc/knot-resolver/kresd.conf
 # Basic up-config variables
 up_dir=/opt/up-config
 up_git_url=https://github.com/usableprivacy/config.git
-up_git_branch=pihole-v6
+up_git_branch=main
 up_conf_dir="$up_dir/conf"
 up_lib_dir="$up_dir/lib"
 up_configured=false
