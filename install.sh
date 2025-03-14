@@ -64,11 +64,11 @@ if [ -d "/vagrant" ]; then
   up_environment=vagrant
 else
   if [ -d "$up_dir" ]; then
-    git -C "$up_dir" pull --rebase &>/dev/null
+    git -C "$up_dir" pull --rebase --force &>/dev/null
   else
     git clone -b "$up_git_branch" "$up_git_url" "$up_dir" &>/dev/null
   fi
-  ln -sf "/$up_dir/install.sh" /usr/local/bin/up-config-installer
+  ln -sf "$up_dir/install.sh" /usr/local/bin/up-config-installer
 fi
 
 if [ -f "/boot/up.txt" ]; then
