@@ -69,7 +69,7 @@
   #       hostname.
   #   - "PI.HOLE"
   #       Respond with "pi.hole".
-  piholePTR = "PI.HOLE"
+  piholePTR = "HOSTNAMEFQDN"
 
   # How should FTL handle queries when the gravity database is not available?
   #
@@ -604,7 +604,7 @@
   #
   # Possible values are:
   #     <valid domain>
-  domain = "pi.hole"
+  domain = "up4.local"
 
   # Webserver access control list (ACL) allowing for restrictions to be put on the list
   # of IP addresses which have access to the web server. The ACL is a comma separated
